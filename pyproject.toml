@@ -1,0 +1,20 @@
+[project]
+name = "agentic-ai-workshop"
+version = "1.0.0"
+description = "Hands-on AI Agents workshop teaching first principles of agent architecture"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "static: Tests that don't require an API key (syntax, imports, file checks)",
+    "api_smoke: Tests that verify OpenAI API patterns work (~$0.01 total)",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
