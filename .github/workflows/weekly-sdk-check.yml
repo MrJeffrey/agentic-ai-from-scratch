@@ -1,0 +1,55 @@
+name: Weekly SDK Compatibility Check
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # Every Monday at 9am UTC
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sdk-matrix-test:
+    name: "Test OpenAI SDK v${{ matrix.openai-version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        openai-version: ["1.30.0", "1.40.0", "1.51.0", "latest"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install specific OpenAI version
+        run: |
+          if [ "${{ matrix.openai-version }}" = "latest" ]; then
+            pip install openai
+          else
+            pip install "openai==${{ matrix.openai-version }}"
+          fi
+          pip install python-dotenv pytest tiktoken numpy packaging
+
+      - name: Show installed version
+        run: pip show openai | grep Version
+
+      - name: Run API smoke tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: pytest tests/test_api_smoke.py -v
+
+  check-for-updates:
+    name: "Check for New SDK Version"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get latest OpenAI SDK version
+        id: check
+        run: |
+          LATEST=$(pip index versions openai 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          echo "Latest OpenAI SDK version: $LATEST"
+          echo "version=$LATEST" >> $GITHUB_OUTPUT
+
+      - name: Log version for review
+        run: |
+          echo "Consider updating pinned versions if ${{ steps.check.outputs.version }} is significantly newer than 1.51.0"
