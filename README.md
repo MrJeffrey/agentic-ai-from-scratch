@@ -176,6 +176,3 @@ Question → JSON Answer → Rule Checks → LLM Judge → Pass/Fail + Cost
 | `Permission denied: start.sh` | Run `chmod +x start.sh` |
 | Rate limit errors | Wait a minute or use a different API key |
 
----
-
-**Built for Technical Product Managers who want to understand AI agents from first principles.**
