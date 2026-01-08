@@ -30,6 +30,11 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
+def clear_screen():
+    """Clear the terminal screen."""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
 # =============================================================================
 # LESSON 1: Why Reasoning Matters
 # =============================================================================
@@ -96,7 +101,7 @@ Trade-off: More tokens = more latency and cost
         messages=[
             {
                 "role": "system",
-                "content": "Think through problems step by step. Show your reasoning, then give the answer.",
+                "content": "Think through problems step by step. Show your reasoning, then give the answer. Use plain text only - no LaTeX or mathematical notation like \\frac or \\[.",
             },
             {"role": "user", "content": tricky_problem},
         ],
@@ -185,12 +190,13 @@ REACT_TOOLS = [
         "type": "function",
         "function": {
             "name": "lookup_policy",
-            "description": "Look up company policies and information. Topics: company_policy, shipping_info, store_hours, loyalty_program",
+            "description": "Look up company policies and information. Available topics: 'company_policy' (for refunds, returns, exchanges), 'shipping_info' (delivery options and costs), 'store_hours' (operating hours), 'loyalty_program' (points and rewards). You must use one of these exact topic names.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "topic": {
                         "type": "string",
+                        "enum": ["company_policy", "shipping_info", "store_hours", "loyalty_program"],
                         "description": "The policy topic to look up",
                     },
                 },
@@ -260,22 +266,20 @@ TOOL_FUNCTIONS = {
 
 REACT_SYSTEM_PROMPT = """You are a helpful customer service agent for a retail store.
 
-CRITICAL: Always output your thinking (🤔 THOUGHT) before calling any tool.
-
 IMPORTANT: You must think step-by-step before taking any action. For each request:
 
 1. THOUGHT: First, analyze what the customer is asking and what information you need
-2. ACTION: Then, use the appropriate tool(s) to get accurate information
+2. ACTION: Use the appropriate tool(s) to get accurate information
 3. OBSERVATION: Review what the tool returned
 4. THOUGHT: Analyze the results and determine if you have enough information
 5. ANSWER: Provide a clear, helpful response to the customer
 
-Always show your reasoning process using this format:
-
-🤔 THOUGHT: [your reasoning about what to do]
-🔧 ACTION: [describe what tool you're using and why]
-📋 OBSERVATION: [what you learned from the tool]
-💡 ANSWER: [your response to the customer]
+CRITICAL RULES:
+- For ANY question about refunds, returns, or exchanges, use lookup_policy with topic "company_policy"
+- For ANY question about shipping, use lookup_policy with topic "shipping_info"
+- NEVER guess or make assumptions about policies - only state facts from tool results
+- If a tool returns information, use ONLY that information in your answer
+- Use check_refund_eligibility to determine if a specific return is allowed
 
 Be helpful, accurate, and transparent about your reasoning.
 """
@@ -352,41 +356,53 @@ def run_react_agent(user_message: str, verbose: bool = True) -> str:
 def demonstrate_react_pattern():
     """Show the ReAct pattern in action with complex queries."""
 
-    print("\n" + "=" * 60)
-    print("LESSON 2: The ReAct Pattern in Action")
-    print("=" * 60)
-
-    print("""
-ReAct = Reasoning + Acting
-
-The pattern: THOUGHT → ACTION → OBSERVATION → THOUGHT → ANSWER
-
-Let's see it work on complex customer service queries...
-""")
-
     examples = [
         {
             "title": "Simple Query",
+            "description": "A straightforward lookup that requires one tool call.",
             "query": "What are your store hours on Saturday?",
         },
         {
             "title": "Multi-Step Reasoning",
+            "description": "A query requiring the agent to check multiple conditions.",
             "query": "I bought a laptop 20 days ago and want to return it. I have the receipt. Can I get a refund?",
         },
         {
             "title": "Complex Calculation",
+            "description": "Combining policy lookup with calculations.",
             "query": "If I'm an elite member and spend $150, how many points will I earn? And how much is that worth in dollars?",
         },
     ]
 
-    for example in examples:
-        print("\n" + "=" * 60)
-        print(f"  {example['title']}")
+    for i, example in enumerate(examples):
+        if i == 0:
+            clear_screen()
+
         print("=" * 60)
+        print("LESSON 2: The ReAct Pattern in Action")
+        print("=" * 60)
+        print("""
+ReAct = Reasoning + Acting
+
+The pattern: THOUGHT -> ACTION -> OBSERVATION -> THOUGHT -> ANSWER
+
+Watch how the agent thinks before acting...
+""")
+        print("-" * 60)
+        print(f"Example {i + 1} of {len(examples)}: {example['title']}")
+        print("-" * 60)
+        print(f"\n{example['description']}\n")
 
         run_react_agent(example["query"])
 
-        input("\n\nPress Enter for next example...")
+        if i < len(examples) - 1:
+            while input("\n\nType 'next' to continue: ").strip().lower() not in ('next', 'n'):
+                print("Type 'next' or 'n' to continue.")
+            clear_screen()
+        else:
+            while input("\n\nType 'next' to continue to Lesson 3: ").strip().lower() not in ('next', 'n'):
+                print("Type 'next' or 'n' to continue.")
+            clear_screen()
 
 
 # =============================================================================
@@ -419,6 +435,8 @@ def compare_approaches():
     )
     print(f"Response: {direct_response.choices[0].message.content}")
     print(f"Tokens: {direct_response.usage.total_tokens}")
+
+    input("\n\nPress Enter to see Approach 2...")
 
     # ReAct approach
     print("\n" + "─" * 50)

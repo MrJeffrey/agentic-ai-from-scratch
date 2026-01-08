@@ -14,8 +14,8 @@ NC='\033[0m' # No Color
 PYTHON=${PYTHON:-python3.13}
 
 echo -e "${BLUE}=========================================${NC}"
-echo -e "${BLUE}   Tutorial 3: Reasoning & ReAct        ${NC}"
-echo -e "${BLUE}   The 'Why' Behind the 'What'          ${NC}"
+echo -e "${BLUE}   Tutorial 5: RAG                       ${NC}"
+echo -e "${BLUE}   Chat with Your Data                   ${NC}"
 echo -e "${BLUE}=========================================${NC}"
 
 # 1. Check for Python
@@ -131,7 +131,7 @@ echo -e "${BLUE}   Launching Tutorial...                 ${NC}"
 echo -e "${BLUE}=========================================${NC}"
 echo ""
 
-$PYTHON react_agent.py
+$PYTHON rag_agent.py
 
 echo ""
 echo -e "${GREEN}Tutorial complete!${NC}"

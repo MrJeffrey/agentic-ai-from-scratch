@@ -1,1 +1,1 @@
-# Test package for agentic-ai-workshop
+# Test package for agentic-ai-from-scratch
