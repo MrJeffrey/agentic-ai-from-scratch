@@ -1,7 +1,7 @@
 [project]
-name = "agentic-ai-workshop"
+name = "agentic-ai-from-scratch"
 version = "1.0.0"
-description = "Hands-on AI Agents workshop teaching first principles of agent architecture"
+description = "A hands-on workshop to learn the first principles of AI agent architecture"
 requires-python = ">=3.10"
 
 [tool.pytest.ini_options]
