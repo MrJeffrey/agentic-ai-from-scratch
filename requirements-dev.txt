@@ -6,6 +6,7 @@ packaging>=21.0
 
 # All tutorial dependencies (pinned versions)
 openai==1.51.0
+httpx<0.28.0
 python-dotenv==1.0.1
 tiktoken==0.7.0
 numpy==1.26.4
